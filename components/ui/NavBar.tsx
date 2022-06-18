@@ -35,7 +35,7 @@ export const NavBar = () => {
               <Button>Mujeres</Button>
             </Link>
           </NextLink>
-          <NextLink href="/category/kid" passHref>
+          <NextLink href="/category/kids" passHref>
             <Link>
               <Button>Niños</Button>
             </Link>
