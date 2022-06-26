@@ -1,25 +1,39 @@
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { UiContext } from '../../context';
-import { SearchOutlined, ShoppingCartOutlined } from '@mui/icons-material';
+import {
+  ClearOutlined,
+  SearchOutlined,
+  ShoppingCartOutlined,
+} from '@mui/icons-material';
 import {
   AppBar,
   Badge,
   Box,
   Button,
   IconButton,
+  Input,
+  InputAdornment,
   Link,
   Toolbar,
   Typography,
 } from '@mui/material';
 
 export const NavBar = () => {
-
   const { toggleSideMenu } = useContext(UiContext);
 
   const router = useRouter();
   const { pathname } = router;
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+
+  const onSearchQuery = () => {
+    if (searchQuery.length > 0) {
+      router.push(`/search/${searchQuery}`);
+    }
+  };
 
   return (
     <AppBar>
@@ -33,7 +47,12 @@ export const NavBar = () => {
 
         <Box flex={1} />
 
-        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+        <Box
+          sx={{
+            display: isSearchVisible ? 'none' : { xs: 'none', sm: 'block' },
+          }}
+          className="fadeIn"
+        >
           <NextLink href="/category/men" passHref>
             <Link>
               <Button color={pathname === '/category/men' ? 'primary' : 'info'}>
@@ -52,7 +71,9 @@ export const NavBar = () => {
           </NextLink>
           <NextLink href="/category/kids" passHref>
             <Link>
-              <Button color={pathname === '/category/kids' ? 'primary' : 'info'}>
+              <Button
+                color={pathname === '/category/kids' ? 'primary' : 'info'}
+              >
                 Niños
               </Button>
             </Link>
@@ -61,7 +82,43 @@ export const NavBar = () => {
 
         <Box flex={1} />
 
-        <IconButton>
+        {isSearchVisible ? (
+          <Input
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+            }}
+            className="fadeIn"
+            autoFocus={true}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && onSearchQuery()}
+            type="text"
+            placeholder="Buscar..."
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton onClick={() => setIsSearchVisible(false)}>
+                  <ClearOutlined />
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        ) : (
+          <IconButton
+            onClick={() => setIsSearchVisible(true)}
+            className="fadeIn"
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+            }}
+          >
+            <SearchOutlined />
+          </IconButton>
+        )}
+
+        {/* Pantallas pequeñas */}
+        <IconButton
+          sx={{ display: { xs: 'flex', sm: 'none' } }}
+          onClick={toggleSideMenu}
+        >
           <SearchOutlined />
         </IconButton>
 
@@ -73,9 +130,7 @@ export const NavBar = () => {
           </IconButton>
         </NextLink>
 
-        <Button
-          onClick={toggleSideMenu}
-        >Menu</Button>
+        <Button onClick={toggleSideMenu}>Menu</Button>
       </Toolbar>
     </AppBar>
   );
