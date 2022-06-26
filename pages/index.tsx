@@ -11,8 +11,6 @@ const Home: NextPage = () => {
 
   const { products, isLoading } = useProducts('/products')
 
-  console.log(products)
-
 
   return (
     <ShopLayout

@@ -7,7 +7,6 @@ import { useProducts } from '../../hooks';
 
 const KidsPage: NextPage = () => {
   const { products, isLoading } = useProducts('/products?gender=kid');
-  console.log(products)
 
   return (
     <ShopLayout

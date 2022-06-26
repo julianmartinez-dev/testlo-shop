@@ -1,12 +1,23 @@
 import { Button, Chip, Grid, Typography, Box } from '@mui/material';
 import { ShopLayout } from '../../components/layouts';
-import { initialData } from '../../database/products';
 import { ProductSlideshow, SizeSelector } from '../../components/products';
 import { ItemCounter } from '../../components/ui';
+import { useRouter } from 'next/router';
+import { IProduct } from '../../interfaces';
+import {
+  NextPage,
+  GetServerSideProps,
+  GetStaticProps,
+  GetStaticPaths,
+} from 'next';
 
-const product = initialData.products[0];
+interface Props {
+  product: IProduct;
+}
 
-const ProductPage = () => {
+const ProductPage: NextPage<Props> = ({ product }) => {
+  const router = useRouter();
+
   return (
     <ShopLayout title={product.title} pageDescription={product.description}>
       <Grid container spacing={3}>
@@ -25,7 +36,10 @@ const ProductPage = () => {
             <Box sx={{ my: 2 }}>
               <Typography variant="subtitle2">Cantidad</Typography>
               <ItemCounter />
-              <SizeSelector selectedSize={product.sizes[0]} sizes={product.sizes} />
+              <SizeSelector
+                selectedSize={product.sizes[0]}
+                sizes={product.sizes}
+              />
             </Box>
             <Button color="secondary" className="circular-btn">
               Agregar al carrito
@@ -41,6 +55,39 @@ const ProductPage = () => {
       </Grid>
     </ShopLayout>
   );
+};
+
+// You should use getStaticPaths if you’re statically pre-rendering pages that use dynamic routes
+import { dbProducts } from '../../database';
+
+export const getStaticPaths: GetStaticPaths = async (ctx) => {
+  const slugs = await dbProducts.getAllProductsSlug();
+
+  return {
+    paths: slugs.map(({ slug }) => ({ params: { slug } })),
+    fallback: 'blocking',
+  };
+};
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const { slug = ''} = params as { slug: string };
+
+  const product = await dbProducts.getProductBySlug(slug);
+
+  if (!product) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      product,
+    },
+    revalidate: 86400,
+  };
 };
 
 export default ProductPage;
