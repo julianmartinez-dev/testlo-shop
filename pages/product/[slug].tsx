@@ -1,22 +1,66 @@
+import { useState, useContext } from 'react';
+import { useRouter } from 'next/router';
 import { Button, Chip, Grid, Typography, Box } from '@mui/material';
 import { ShopLayout } from '../../components/layouts';
 import { ProductSlideshow, SizeSelector } from '../../components/products';
 import { ItemCounter } from '../../components/ui';
-import { useRouter } from 'next/router';
-import { IProduct } from '../../interfaces';
+import { IProduct, ICartProduct, ISize } from '../../interfaces';
+import { dbProducts } from '../../database';
 import {
   NextPage,
-  GetServerSideProps,
   GetStaticProps,
   GetStaticPaths,
 } from 'next';
-
+import { CartContext } from '../../context';
 interface Props {
   product: IProduct;
 }
 
 const ProductPage: NextPage<Props> = ({ product }) => {
-  const router = useRouter();
+
+  const router = useRouter()
+  const { addProductToCart } = useContext(CartContext);
+
+  const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
+    _id: product._id,
+    image: product.images[0],
+    price: product.price,
+    size: undefined,
+    slug: product.slug,
+    title: product.title,
+    gender: product.gender,
+    quantity: 1,
+  })
+
+  const onSelectedSize = (size: ISize) => {
+    setTempCartProduct({...tempCartProduct, size: size})
+  }
+
+  const onIncrement = () =>{
+    if(tempCartProduct.quantity < product.inStock){
+      setTempCartProduct({...tempCartProduct, quantity: tempCartProduct.quantity + 1})
+    }else{
+      return;
+    }
+  }
+
+  const onDecrement = () =>{
+    if(tempCartProduct.quantity > 1){
+      setTempCartProduct({...tempCartProduct, quantity: tempCartProduct.quantity - 1})
+    }else{
+      return;
+    }
+  }
+
+  const onAddToCart = () =>{
+
+    if(tempCartProduct.size === undefined){
+      return;
+    }
+    addProductToCart(tempCartProduct);
+    router.push('/cart')
+    
+  }
 
   return (
     <ShopLayout title={product.title} pageDescription={product.description}>
@@ -35,17 +79,36 @@ const ProductPage: NextPage<Props> = ({ product }) => {
 
             <Box sx={{ my: 2 }}>
               <Typography variant="subtitle2">Cantidad</Typography>
-              <ItemCounter />
+              <ItemCounter
+                quantity={tempCartProduct.quantity}
+                onIncrement={onIncrement}
+                onDecrement={onDecrement}
+              />
               <SizeSelector
-                selectedSize={product.sizes[0]}
+                selectedSize={tempCartProduct.size}
                 sizes={product.sizes}
+                onSelectedSize={(size: ISize) => onSelectedSize(size)}
               />
             </Box>
-            <Button color="secondary" className="circular-btn">
-              Agregar al carrito
-            </Button>
 
-            {/* <Chip label="No hay disponibles" color="error" variant='outlined' /> */}
+            {product.inStock ? (
+              <Button
+                color="secondary"
+                className="circular-btn"
+                onClick={onAddToCart}
+              >
+                {tempCartProduct.size
+                  ? 'Agregar al carrito'
+                  : 'Selecciona una talla'}
+              </Button>
+            ) : (
+              <Chip
+                label="No hay disponibles"
+                color="error"
+                variant="outlined"
+              />
+            )}
+
             <Box sx={{ mt: 3 }}>
               <Typography variant="subtitle2">Descripción</Typography>
               <Typography variant="body2">{product.description}</Typography>
@@ -58,7 +121,7 @@ const ProductPage: NextPage<Props> = ({ product }) => {
 };
 
 // You should use getStaticPaths if you’re statically pre-rendering pages that use dynamic routes
-import { dbProducts } from '../../database';
+
 
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
   const slugs = await dbProducts.getAllProductsSlug();
@@ -69,7 +132,7 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
   };
 };
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const { slug = ''} = params as { slug: string };
+  const { slug = '' } = params as { slug: string };
 
   const product = await dbProducts.getProductBySlug(slug);
 
