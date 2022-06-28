@@ -22,7 +22,7 @@ import {
 
 export const NavBar = () => {
   const { toggleSideMenu } = useContext(UiContext);
-  const { cart } = useContext(CartContext);
+  const { cart, numberOfItems } = useContext(CartContext);
   const router = useRouter();
   const { pathname } = router;
 
@@ -34,8 +34,6 @@ export const NavBar = () => {
       router.push(`/search/${searchQuery}`);
     }
   };
-
-  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <AppBar>
@@ -126,7 +124,7 @@ export const NavBar = () => {
 
         <NextLink href="/cart" passHref>
           <IconButton>
-            <Badge badgeContent={totalItems} color="secondary">
+            <Badge badgeContent={numberOfItems} color="secondary">
               <ShoppingCartOutlined />
             </Badge>
           </IconButton>

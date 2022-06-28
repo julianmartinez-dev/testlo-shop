@@ -10,3 +10,10 @@ export interface ICartProduct {
   gender: 'men' | 'women' | 'kid' | 'unisex';
   quantity: number;
 }
+
+export interface IOrderSummary{
+  numberOfItems: number;
+  subTotal: number;
+  taxes: number;
+  total: number;
+}
