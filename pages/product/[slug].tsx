@@ -36,21 +36,12 @@ const ProductPage: NextPage<Props> = ({ product }) => {
     setTempCartProduct({...tempCartProduct, size: size})
   }
 
-  const onIncrement = () =>{
-    if(tempCartProduct.quantity < product.inStock){
-      setTempCartProduct({...tempCartProduct, quantity: tempCartProduct.quantity + 1})
-    }else{
-      return;
-    }
-  }
-
-  const onDecrement = () =>{
-    if(tempCartProduct.quantity > 1){
-      setTempCartProduct({...tempCartProduct, quantity: tempCartProduct.quantity - 1})
-    }else{
-      return;
-    }
-  }
+   const onUpdateQuantity = (quantity: number) => {
+     setTempCartProduct((currentProduct) => ({
+       ...currentProduct,
+       quantity,
+     }));
+   };
 
   const onAddToCart = () =>{
 
@@ -80,9 +71,9 @@ const ProductPage: NextPage<Props> = ({ product }) => {
             <Box sx={{ my: 2 }}>
               <Typography variant="subtitle2">Cantidad</Typography>
               <ItemCounter
-                quantity={tempCartProduct.quantity}
-                onIncrement={onIncrement}
-                onDecrement={onDecrement}
+                currentValue={tempCartProduct.quantity}
+                maxValue={product.inStock > 10 ? 10 : product.inStock}
+                updateQuantity={onUpdateQuantity} 
               />
               <SizeSelector
                 selectedSize={tempCartProduct.size}

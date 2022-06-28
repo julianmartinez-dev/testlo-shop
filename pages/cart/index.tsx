@@ -9,12 +9,17 @@ import {
 import { Box } from '@mui/system';
 import { CartList, OrderSummary } from '../../components/cart';
 import { ShopLayout } from '../../components/layouts';
+import { useContext } from 'react';
+import { CartContext } from '../../context';
 
 const CartPage = () => {
+  const { cart } = useContext(CartContext);
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
   return (
     <ShopLayout
-      title="Carrito - 3"
-      pageDescription="Carrito de coempras de la tienda"
+      title={`Carrito: ${totalItems} artículos`}
+      pageDescription="Carrito de compras de la tienda"
     >
       <Typography variant="h1" component="h1">
         Carrito

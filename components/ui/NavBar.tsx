@@ -1,7 +1,7 @@
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
-import { UiContext } from '../../context';
+import { CartContext, UiContext } from '../../context';
 import {
   ClearOutlined,
   SearchOutlined,
@@ -22,7 +22,7 @@ import {
 
 export const NavBar = () => {
   const { toggleSideMenu } = useContext(UiContext);
-
+  const { cart } = useContext(CartContext);
   const router = useRouter();
   const { pathname } = router;
 
@@ -34,6 +34,8 @@ export const NavBar = () => {
       router.push(`/search/${searchQuery}`);
     }
   };
+
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <AppBar>
@@ -124,7 +126,7 @@ export const NavBar = () => {
 
         <NextLink href="/cart" passHref>
           <IconButton>
-            <Badge badgeContent={2} color="secondary">
+            <Badge badgeContent={totalItems} color="secondary">
               <ShoppingCartOutlined />
             </Badge>
           </IconButton>
