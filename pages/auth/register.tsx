@@ -26,7 +26,7 @@ const RegisterPage = () => {
       console.log(data)
     } catch (error) {
       setShowError(true);
-      setTimeout(() => {
+      setTimeout(() => {111
         setShowError(false);
       }, 3000);
     }
