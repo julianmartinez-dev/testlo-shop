@@ -26,6 +26,26 @@ export const signToken = (_id:string, email:string) : string => {
     )
 }
 
+export const isValidToken = (token:string) : Promise<string> => {
+    if(!process.env.JWT_SECRET_SEED){
+        throw new Error('JWT_SECRET_SEED is not defined');
+    }
+
+    return new Promise( (resolve, reject) =>{
+        try {
+            jwt.verify(token, process.env.JWT_SECRET_SEED || '', (error, payload) =>{
+                if(error){
+                    reject(error);
+                }
+                const { _id } = payload as {_id: string}
+                resolve(_id);
+            });
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export const validateEmail = (email: string) : boolean =>{
      const emailRegex =
        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
