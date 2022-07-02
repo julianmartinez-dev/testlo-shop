@@ -22,13 +22,13 @@ import {
 
 export const NavBar = () => {
   const { toggleSideMenu } = useContext(UiContext);
-  const { cart, numberOfItems } = useContext(CartContext);
+  const { numberOfItems } = useContext(CartContext);
   const router = useRouter();
   const { pathname } = router;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-
+  
   const onSearchQuery = () => {
     if (searchQuery.length > 0) {
       router.push(`/search/${searchQuery}`);
