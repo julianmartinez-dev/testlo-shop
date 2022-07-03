@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import NextLink from 'next/link';
 import { Box, Button, Grid, TextField, Typography, Link, Chip } from '@mui/material';
 import { AuthLayout } from '../../components/layouts'
@@ -6,6 +6,8 @@ import { SubmitHandler, useForm,  } from 'react-hook-form';
 import { isEmail } from '../../utils/validations';
 import { tesloApi } from '../../api';
 import { ErrorOutline } from '@mui/icons-material';
+import { AuthContext } from '../../context';
+import { useRouter } from 'next/router';
 
 type FormData = {
   email: string;
@@ -13,26 +15,31 @@ type FormData = {
 };
 
 const LoginPage = () => {
+  
+  const router = useRouter()
+  const { loginUser } = useContext(AuthContext);
+  const { register,handleSubmit,formState: { errors }} = useForm<FormData>();
+  const [showError, setShowError] = useState(false)
 
-   const { register,handleSubmit,formState: { errors }} = useForm<FormData>();
-   const [showError, setShowError] = useState(false)
+  const onSubmit: SubmitHandler<FormData> = async ({email, password}) => {
 
-   const onSubmit: SubmitHandler<FormData> = async ({email, password}) => {
+    setShowError(false)
 
-      setShowError(false)
-      try {
-        const { data } = await tesloApi.post('/user/login', { email, password });
-        console.log(data)
-      } catch (error) {
-        setShowError(true)
+    const isValidLogin = await loginUser(email, password);
 
-        setTimeout(() => {
-          setShowError(false)
-        }, 3000);
-      }
+    if(!isValidLogin) {
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, 3000);
+      return;
+    }
 
-      //TODO: Navegar a la pantalla en la que el usuario estaba
-   }
+    
+    //TODO: Navegar a la pantalla en la que el usuario estaba
+    router.replace('/')
+  
+  }
 
    
   return (

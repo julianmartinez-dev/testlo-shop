@@ -1,11 +1,13 @@
-import { Box, Grid, Typography, TextField, Button, Link, Chip } from '@mui/material';
+import React, { useState, useContext } from 'react'
 import NextLink from 'next/link';
-import React, { useState } from 'react'
+import { useRouter } from 'next/router';
+import { Box, Grid, Typography, TextField, Button, Link, Chip } from '@mui/material';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { AuthLayout } from '../../components/layouts'
 import { isEmail } from '../../utils/validations';
 import tesloApi from '../../api/tesloApi';
 import { ErrorOutline } from '@mui/icons-material';
+import { AuthContext } from '../../context';
 
 type FormData = {
   name: string,
@@ -15,21 +17,27 @@ type FormData = {
 
 const RegisterPage = () => {
 
+  const router = useRouter()
+  const { registerUser } = useContext(AuthContext)
   const { register,handleSubmit,formState: { errors }} = useForm<FormData>();
   const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const onSubmit: SubmitHandler<FormData> = async ({email, password, name}) => {
     setShowError(false);
 
-    try {
-      const { data } = await tesloApi.post('/user/register', { email, password, name });
-      console.log(data)
-    } catch (error) {
+    const { hasError, message } = await registerUser(name, email, password)
+
+    if(hasError){
       setShowError(true);
-      setTimeout(() => {111
+      setErrorMessage(message!)
+      setTimeout(() => {
         setShowError(false);
       }, 3000);
+      return;
     }
+
+    router.replace('/')
   }
 
   
@@ -43,7 +51,7 @@ const RegisterPage = () => {
                 Crear Cuenta
               </Typography>
               <Chip
-                label="El correo ya existe"
+                label={errorMessage}
                 color="error"
                 icon={<ErrorOutline />}
                 className="fadeIn"
