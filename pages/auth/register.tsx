@@ -22,6 +22,9 @@ const RegisterPage = () => {
   const { register,handleSubmit,formState: { errors }} = useForm<FormData>();
   const [showError, setShowError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const destination = router.query.page?.toString() || '/';
+
+  
 
   const onSubmit: SubmitHandler<FormData> = async ({email, password, name}) => {
     setShowError(false);
@@ -37,7 +40,7 @@ const RegisterPage = () => {
       return;
     }
 
-    router.replace('/')
+    router.replace(destination)
   }
 
   
@@ -120,7 +123,14 @@ const RegisterPage = () => {
             </Grid>
 
             <Grid item xs={12} display="flex" justifyContent="end">
-              <NextLink href="/auth/login" passHref>
+              <NextLink
+                href={
+                  router.query.page
+                    ? `/auth/register?page=${destination}`
+                    : '/auth/register'
+                }
+                passHref
+              >
                 <Link underline="always">
                   ¿Ya tienes una cuenta? Inicia sesión
                 </Link>

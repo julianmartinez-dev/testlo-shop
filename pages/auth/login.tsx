@@ -21,6 +21,8 @@ const LoginPage = () => {
   const { register,handleSubmit,formState: { errors }} = useForm<FormData>();
   const [showError, setShowError] = useState(false)
 
+  const destination = router.query.page?.toString() || '/';
+
   const onSubmit: SubmitHandler<FormData> = async ({email, password}) => {
 
     setShowError(false)
@@ -33,11 +35,8 @@ const LoginPage = () => {
         setShowError(false);
       }, 3000);
       return;
-    }
-
-    
-    //TODO: Navegar a la pantalla en la que el usuario estaba
-    router.replace('/')
+    }    
+    router.replace(destination)
   
   }
 
@@ -51,12 +50,12 @@ const LoginPage = () => {
               <Typography variant="h1" component="h1">
                 Iniciar Sesión
               </Typography>
-              <Chip 
-              label="No reconocemos ese usuario / contraseña"
-              color="error"
-              icon={ <ErrorOutline />}
-              className="fadeIn"
-              sx={{display: showError ? 'flex' : 'none'}}
+              <Chip
+                label="No reconocemos ese usuario / contraseña"
+                color="error"
+                icon={<ErrorOutline />}
+                className="fadeIn"
+                sx={{ display: showError ? 'flex' : 'none' }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -67,7 +66,7 @@ const LoginPage = () => {
                 fullWidth
                 {...register('email', {
                   required: 'Este campo es requerido',
-                  validate: (value)=> isEmail(value)
+                  validate: (value) => isEmail(value),
                 })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
@@ -105,7 +104,7 @@ const LoginPage = () => {
             </Grid>
 
             <Grid item xs={12} display="flex" justifyContent="end">
-              <NextLink href="/auth/register" passHref>
+              <NextLink href={router.query.page ? `/auth/register?page=${destination}` : '/auth/register'} passHref>
                 <Link underline="always">¿No tienes cuenta?</Link>
               </NextLink>
             </Grid>
