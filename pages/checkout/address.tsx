@@ -1,3 +1,7 @@
+import { GetServerSideProps } from 'next';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/router';
 import {
   Button,
   FormControl,
@@ -9,8 +13,51 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { ShopLayout } from '../../components/layouts';
+import { isValidToken, countries } from '../../utils';
+
+type FormData = {
+  firstName: string;
+  lastName: string;
+  address: string;
+  address2?: string;
+  zip: string;
+  city: string;
+  country: string;
+  phone: string;
+};
+
+const getAddressFromCookies = () : FormData => {
+
+  return {
+    firstName : Cookies.get('firstName') || '',
+    lastName  : Cookies.get('lastName') || '',
+    address   : Cookies.get('address') || '',
+    address2  : Cookies.get('address2') || '',
+    zip       : Cookies.get('zip') || '',
+    city      : Cookies.get('city') || '',
+    country   : Cookies.get('country') || '',
+    phone     : Cookies.get('phone') || '',
+  }
+}
 
 const AddressPage = () => {
+  const router = useRouter();
+
+  const {register,handleSubmit,formState: { errors },} = useForm<FormData>({defaultValues: getAddressFromCookies()});
+
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+    Cookies.set('firstName', data.firstName);
+    Cookies.set('lastName', data.lastName);
+    Cookies.set('address', data.address);
+    Cookies.set('address2', data.address2 || '');
+    Cookies.set('zip', data.zip);
+    Cookies.set('city', data.city);
+    Cookies.set('country', data.country);
+    Cookies.set('phone', data.phone);
+
+    router.push('/checkout/summary')
+  };
+
   return (
     <ShopLayout
       title="Dirección"
@@ -19,61 +66,159 @@ const AddressPage = () => {
       <Typography variant="h1" component="h1">
         Dirección
       </Typography>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Grid container spacing={2} sx={{ mt: 2 }}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Nombre"
+              variant="filled"
+              fullWidth
+              {...register('firstName', {
+                required: 'Este campo es requerido',
+              })}
+              error={!!errors.firstName}
+              helperText={errors.firstName?.message}
+            />
+          </Grid>
 
-      <Grid container spacing={2} sx={{ mt: 2 }}>
-        <Grid item xs={12} sm={6}>
-          <TextField label="Nombre" variant="filled" fullWidth />
-        </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Apellido"
+              variant="filled"
+              fullWidth
+              {...register('lastName', {
+                required: 'Este campo es requerido',
+              })}
+              error={!!errors.lastName}
+              helperText={errors.lastName?.message}
+            />
+          </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField label="Apellido" variant="filled" fullWidth />
-        </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Dirección"
+              variant="filled"
+              fullWidth
+              {...register('address', {
+                required: 'Este campo es requerido',
+              })}
+              error={!!errors.address}
+              helperText={errors.address?.message}
+            />
+          </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField label="Dirección" variant="filled" fullWidth />
-        </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Dirección 2 (opcional)"
+              variant="filled"
+              fullWidth
+              {...register('address2')}
+            />
+          </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Dirección 2 (opcional)"
-            variant="filled"
-            fullWidth
-          />
-        </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Codigo Postal"
+              variant="filled"
+              fullWidth
+              {...register('zip', {
+                required: 'Este campo es requerido',
+              })}
+              error={!!errors.zip}
+              helperText={errors.zip?.message}
+            />
+          </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField label="Codigo Postal" variant="filled" fullWidth />
-        </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Ciudad"
+              variant="filled"
+              fullWidth
+              {...register('city', {
+                required: 'Este campo es requerido',
+              })}
+              error={!!errors.city}
+              helperText={errors.city?.message}
+            />
+          </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField label="Ciudad" variant="filled" fullWidth />
-        </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <TextField
+                select
+                variant="filled"
+                label="Pais"
+                defaultValue={'ARG'}
+                {...register('country', {
+                  required: 'Este campo es requerido',
+                })}
+                error={!!errors.country}
+                helperText={errors.country?.message}
+              >
+                {countries.map((country) => (
+                  <MenuItem key={country.code} value={country.code}>
+                    {country.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </FormControl>
+          </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <Select variant="filled" label="Pais" value={1}>
-              <MenuItem value={1}>Argentina</MenuItem>
-              <MenuItem value={2}>Brasil</MenuItem>
-              <MenuItem value={3}>Chile</MenuItem>
-              <MenuItem value={4}>Uruguay</MenuItem>
-              <MenuItem value={5}>Paraguay</MenuItem>
-              <MenuItem value={6}>Peru</MenuItem>
-              <MenuItem value={7}>Bolivia</MenuItem>
-            </Select>
-          </FormControl>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Teléfono"
+              variant="filled"
+              fullWidth
+              {...register('phone', {
+                required: 'Este campo es requerido',
+              })}
+              error={!!errors.phone}
+              helperText={errors.phone?.message}
+            />
+          </Grid>
         </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <TextField label="Teléfono" variant="filled" fullWidth />
-        </Grid>
-      </Grid>
-      <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
-        <Button className="circular-btn" color="secondary" size="large">
-          Revisar Pedido
-        </Button>
-      </Box>
+        <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
+          <Button
+            className="circular-btn"
+            color="secondary"
+            size="large"
+            type="submit"
+          >
+            Revisar Pedido
+          </Button>
+        </Box>
+      </form>
     </ShopLayout>
   );
+};
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const { token = '' } = req.cookies;
+  let userID = '';
+  let validToken = false;
+
+  try {
+    await isValidToken(token);
+    validToken = true;
+  } catch (error) {
+    validToken = false;
+  }
+
+  if (!validToken) {
+    return {
+      redirect: {
+        destination: '/auth/login?page=/checkout/address',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
 };
 
 export default AddressPage;

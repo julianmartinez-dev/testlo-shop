@@ -72,4 +72,37 @@ const SummaryPage = () => {
   );
 };
 
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+import { GetServerSideProps } from 'next'
+import { isValidToken } from '../../utils';
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const { token = ''} = req.cookies;
+  let userID = '';
+  let validToken = false;
+
+  try {
+    await isValidToken(token);
+    validToken = true;
+  } catch (error) {
+    validToken = false;
+  }
+
+  if(!validToken) {
+    return {
+      redirect: {
+        destination: '/auth/login?page=/checkout/summary',
+        permanent: false,
+      }
+    }
+  }
+
+  return {
+    props: {
+      
+    }
+  }
+}
+
 export default SummaryPage;

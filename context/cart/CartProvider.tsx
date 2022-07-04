@@ -3,6 +3,7 @@ import { ICartProduct } from '../../interfaces';
 import { CartContext, cartReducer } from './';
 import Cookie from 'js-cookie';
 export interface CartState {
+  isLoaded: boolean;
   cart: ICartProduct[];
   numberOfItems: number;
   subTotal: number;
@@ -11,6 +12,7 @@ export interface CartState {
 }
 
 const CART_INITIAL_VALUE: CartState = {
+  isLoaded: false,
   cart: [],
   numberOfItems: 0,
   subTotal: 0,
@@ -43,7 +45,9 @@ export const CartProvider: FC<Props> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    Cookie.set('cart', JSON.stringify(state.cart));
+    if(state.isLoaded){
+      Cookie.set('cart', JSON.stringify(state.cart));
+    }
   }, [state.cart]);
 
   useEffect(() => {
