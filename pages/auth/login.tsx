@@ -1,13 +1,14 @@
 import { useState, useContext } from 'react';
 import NextLink from 'next/link';
+import { GetServerSideProps } from 'next'
 import { Box, Button, Grid, TextField, Typography, Link, Chip } from '@mui/material';
 import { AuthLayout } from '../../components/layouts'
 import { SubmitHandler, useForm,  } from 'react-hook-form';
 import { isEmail } from '../../utils/validations';
-import { tesloApi } from '../../api';
 import { ErrorOutline } from '@mui/icons-material';
 import { AuthContext } from '../../context';
 import { useRouter } from 'next/router';
+import { getSession, signIn } from 'next-auth/react';
 
 type FormData = {
   email: string;
@@ -26,17 +27,19 @@ const LoginPage = () => {
   const onSubmit: SubmitHandler<FormData> = async ({email, password}) => {
 
     setShowError(false)
+    
+    await signIn('credentials', { email, password })
 
-    const isValidLogin = await loginUser(email, password);
+    // const isValidLogin = await loginUser(email, password);
 
-    if(!isValidLogin) {
-      setShowError(true);
-      setTimeout(() => {
-        setShowError(false);
-      }, 3000);
-      return;
-    }    
-    router.replace(destination)
+    // if(!isValidLogin) {
+    //   setShowError(true);
+    //   setTimeout(() => {
+    //     setShowError(false);
+    //   }, 3000);
+    //   return;
+    // }    
+    // router.replace(destination)
   
   }
 
@@ -113,6 +116,30 @@ const LoginPage = () => {
       </form>
     </AuthLayout>
   );
+}
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({req, query}) => {
+   
+  const session = await getSession({req});
+  const { page = '/' } = query
+  if(session) {
+    return{
+      redirect: {
+        destination: page.toString(),
+        permanent: false,
+      }
+    }
+  }
+
+
+  return {
+    props: {
+      
+    }
+  }
 }
 
 export default LoginPage
