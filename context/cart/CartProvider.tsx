@@ -9,6 +9,18 @@ export interface CartState {
   subTotal: number;
   taxes: number;
   total: number;
+  shippingAddress?: ShippingAddress;
+}
+
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  country: string;
+  phone: string;
+  address2?: string;
+  zip: string;
 }
 
 const CART_INITIAL_VALUE: CartState = {
@@ -18,6 +30,7 @@ const CART_INITIAL_VALUE: CartState = {
   subTotal: 0,
   taxes: 0,
   total: 0,
+  shippingAddress : undefined,
 };
 
 interface Props {
@@ -43,6 +56,26 @@ export const CartProvider: FC<Props> = ({ children }) => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    if(Cookie.get('firstName')){
+      const cookieAddress = {
+        firstName: Cookie.get('firstName') || '',
+        lastName: Cookie.get('lastName') || '',
+        address: Cookie.get('address') || '',
+        address2: Cookie.get('address2') || '',
+        city: Cookie.get('city') || '',
+        country: Cookie.get('country') || '',
+        phone: Cookie.get('phone') || '',
+        zip: Cookie.get('zip') || '',
+      }
+  
+      dispatch({
+        type: '[Cart] - Load ShippingAddress from cookies',
+        payload: cookieAddress,
+      }) 
+    }
+  },[])
 
   useEffect(() => {
     if(state.isLoaded){
@@ -117,6 +150,22 @@ export const CartProvider: FC<Props> = ({ children }) => {
     });
   };
 
+  const updateShippingaddress = (shippingAddress: ShippingAddress) => {
+    Cookie.set('firstName', shippingAddress.firstName);
+    Cookie.set('lastName', shippingAddress.lastName);
+    Cookie.set('address', shippingAddress.address);
+    Cookie.set('address2', shippingAddress.address2 || '');
+    Cookie.set('zip', shippingAddress.zip);
+    Cookie.set('city', shippingAddress.city);
+    Cookie.set('country', shippingAddress.country);
+    Cookie.set('phone', shippingAddress.phone);
+    
+    dispatch({
+      type: '[Cart] - Update ShippingAddress',
+      payload: shippingAddress,
+    });
+  }
+
   return (
     <CartContext.Provider
       value={{
@@ -126,6 +175,7 @@ export const CartProvider: FC<Props> = ({ children }) => {
         addProductToCart,
         updateCartQuantity,
         removeCartProduct,
+        updateShippingaddress,
       }}
     >
       {children}

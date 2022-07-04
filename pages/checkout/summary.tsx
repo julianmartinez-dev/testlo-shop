@@ -1,5 +1,8 @@
 import NextLink from 'next/link';
-Link;
+import { GetServerSideProps } from 'next';
+import { isValidToken } from '../../utils';
+import { useContext } from 'react';
+import { CartContext } from '../../context';
 import {
   Button,
   Card,
@@ -12,8 +15,18 @@ import {
 } from '@mui/material';
 import { CartList, OrderSummary } from '../../components/cart';
 import { ShopLayout } from '../../components/layouts';
+import { countries } from '../../utils';
 
 const SummaryPage = () => {
+
+  const { shippingAddress, numberOfItems } = useContext(CartContext);
+
+  if(!shippingAddress){
+    return (<></>)
+  }
+
+  const { firstName, lastName, address, address2 = '', city, zip, country, phone } = shippingAddress;
+
   return (
     <ShopLayout
       title="Resumen de la orden"
@@ -22,7 +35,7 @@ const SummaryPage = () => {
       <Typography variant="h1" component="h1">
         Resumen de la orden
       </Typography>
-      <Grid container>
+      <Grid container mt={2}>
         <Grid item xs={12} sm={7}>
           <CartList />
         </Grid>
@@ -30,7 +43,7 @@ const SummaryPage = () => {
           <Card className="summary-card">
             <CardContent>
               <Typography variant="h2" component="h2">
-                Resumen (3 productos)
+                {`Resumen (${numberOfItems}) ${numberOfItems > 1 ? 'productos' : 'producto'}`}
               </Typography>
               <Divider sx={{ my: 1 }} />
 
@@ -43,11 +56,11 @@ const SummaryPage = () => {
                 </NextLink>
               </Box>
 
-              <Typography>Julian Martinez</Typography>
-              <Typography>Liniers 736</Typography>
-              <Typography>San Francisco, 2400</Typography>
-              <Typography>Argentina</Typography>
-              <Typography>356433398</Typography>
+              <Typography>{firstName} {lastName}</Typography>
+              <Typography>{address}{address2 ? `, ${address2}` : ''}</Typography>
+              <Typography>{city} {zip}</Typography>
+              <Typography>{countries.find(c => c.code === country)?.name}</Typography>
+              <Typography>{shippingAddress?.phone}</Typography>
 
               <Divider sx={{ my: 1 }} />
 
@@ -74,12 +87,9 @@ const SummaryPage = () => {
 
 // You should use getServerSideProps when:
 // - Only if you need to pre-render a page whose data must be fetched at request time
-import { GetServerSideProps } from 'next'
-import { isValidToken } from '../../utils';
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { token = ''} = req.cookies;
-  let userID = '';
   let validToken = false;
 
   try {
