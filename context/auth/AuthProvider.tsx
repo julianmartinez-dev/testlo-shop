@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
+import { useSession, signOut } from 'next-auth/react';
 import { FC, useReducer, useEffect } from 'react';
 import { tesloApi } from '../../api';
 import { IUser } from '../../interfaces';
@@ -23,23 +24,31 @@ interface Props {
 export const AuthProvider: FC<Props> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, AUTH_INITIAL_STATE);
   const router = useRouter();
+  const { data, status } = useSession();
+
 
   useEffect(() => {
-    checkToken();
-  },[])
+    if (status === 'authenticated') {
+      dispatch({ type: '[Auth] - Login', payload: data.user as IUser });
+    }
+  },[status, data])
 
-  const checkToken = async () => {
-    const token = Cookies.get('token');
-    if(token){
-      try {
-        const { data } = await tesloApi.get('/user/validate-token');
-        Cookies.set('token', data.token);
-        dispatch({ type: '[Auth] - Login', payload: data.user });
-      } catch (error) {
-        Cookies.remove('token');
-      }
-  }
-  }
+  // useEffect(() => {
+  //   checkToken();
+  // },[])
+
+  // const checkToken = async () => {
+  //   const token = Cookies.get('token');
+  //   if(token){
+  //     try {
+  //       const { data } = await tesloApi.get('/user/validate-token');
+  //       Cookies.set('token', data.token);
+  //       dispatch({ type: '[Auth] - Login', payload: data.user });
+  //     } catch (error) {
+  //       Cookies.remove('token');
+  //     }
+  // }
+  // }
 
   const loginUser = async (email: string, password: string) : Promise<boolean> =>{
       try {
@@ -80,10 +89,19 @@ export const AuthProvider: FC<Props> = ({ children }) => {
   }
 
   const logoutUser = async () => {
-    Cookies.remove('token');
+    
     Cookies.remove('cart');
-    router.reload();
-    // dispatch({ type: '[Auth] - Logout' });
+    Cookies.remove('firstName');
+    Cookies.remove('lastName');
+    Cookies.remove('address');
+    Cookies.remove('address2');
+    Cookies.remove('country');
+    Cookies.remove('city');
+    Cookies.remove('zip');
+    Cookies.remove('phone');
+
+    signOut();
+
   }
 
 
