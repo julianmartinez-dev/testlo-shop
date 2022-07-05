@@ -1,5 +1,5 @@
 import { FC, useEffect, useReducer } from 'react';
-import { ICartProduct } from '../../interfaces';
+import { ICartProduct, IShippingAddress } from '../../interfaces';
 import { CartContext, cartReducer } from './';
 import Cookie from 'js-cookie';
 export interface CartState {
@@ -9,19 +9,10 @@ export interface CartState {
   subTotal: number;
   taxes: number;
   total: number;
-  shippingAddress?: ShippingAddress;
+  shippingAddress?: IShippingAddress;
 }
 
-export interface ShippingAddress {
-  firstName: string;
-  lastName: string;
-  address: string;
-  city: string;
-  country: string;
-  phone: string;
-  address2?: string;
-  zip: string;
-}
+
 
 const CART_INITIAL_VALUE: CartState = {
   isLoaded: false,
@@ -150,7 +141,7 @@ export const CartProvider: FC<Props> = ({ children }) => {
     });
   };
 
-  const updateShippingaddress = (shippingAddress: ShippingAddress) => {
+  const updateShippingaddress = (shippingAddress: IShippingAddress) => {
     Cookie.set('firstName', shippingAddress.firstName);
     Cookie.set('lastName', shippingAddress.lastName);
     Cookie.set('address', shippingAddress.address);

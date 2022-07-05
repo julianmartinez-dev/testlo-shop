@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import { CartList, OrderSummary } from '../../components/cart';
 import { ShopLayout } from '../../components/layouts';
-import { countries } from '../../utils';
 
 const SummaryPage = () => {
 
