@@ -1,14 +1,13 @@
-import { useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import NextLink from 'next/link';
 import { GetServerSideProps } from 'next'
-import { Box, Button, Grid, TextField, Typography, Link, Chip } from '@mui/material';
+import { Box, Button, Grid, TextField, Typography, Link, Chip, Divider } from '@mui/material';
 import { AuthLayout } from '../../components/layouts'
 import { SubmitHandler, useForm,  } from 'react-hook-form';
 import { isEmail } from '../../utils/validations';
 import { ErrorOutline } from '@mui/icons-material';
-import { AuthContext } from '../../context';
 import { useRouter } from 'next/router';
-import { getSession, signIn } from 'next-auth/react';
+import { getSession, signIn, getProviders } from 'next-auth/react';
 
 type FormData = {
   email: string;
@@ -18,10 +17,20 @@ type FormData = {
 const LoginPage = () => {
   
   const router = useRouter()
-  const { loginUser } = useContext(AuthContext);
   const { register,handleSubmit,formState: { errors }} = useForm<FormData>();
   const [showError, setShowError] = useState(false)
+  const [providers, setProvider] = useState<any>({})
 
+  useEffect(() => {
+    getProviders().then(res => {
+      setProvider(res)
+    }).catch(err => {
+      console.log(err)
+    }).finally(() => {
+      console.log('finally')
+    }
+    )
+  },[])
   const destination = router.query.page?.toString() || '/';
 
   const onSubmit: SubmitHandler<FormData> = async ({email, password}) => {
@@ -29,17 +38,6 @@ const LoginPage = () => {
     setShowError(false)
     
     await signIn('credentials', { email, password })
-
-    // const isValidLogin = await loginUser(email, password);
-
-    // if(!isValidLogin) {
-    //   setShowError(true);
-    //   setTimeout(() => {
-    //     setShowError(false);
-    //   }, 3000);
-    //   return;
-    // }    
-    // router.replace(destination)
   
   }
 
@@ -111,6 +109,32 @@ const LoginPage = () => {
                 <Link underline="always">¿No tienes cuenta?</Link>
               </NextLink>
             </Grid>
+            
+            <Grid item xs={12} display="flex" flexDirection={'column'} justifyContent="end">
+              <Divider sx={{ width: '100%', mb: 2 }} />
+              {
+                
+                Object.values(providers).map((provider:any) => {
+
+                  if(provider.id === 'credentials') return (<div key="credentials"></div>)
+                  return (
+                    <Button
+                      key={provider.id}
+                      variant="outlined"
+                      fullWidth
+                      color="primary"
+                      sx={{mb:1}}
+                      onClick={() => signIn(provider.id)}
+                    >
+                      {provider.name}
+                    </Button>
+                  )
+                })
+
+              }
+            
+            </Grid>
+
           </Grid>
         </Box>
       </form>
