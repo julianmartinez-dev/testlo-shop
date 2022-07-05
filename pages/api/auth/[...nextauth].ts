@@ -16,7 +16,7 @@ export default NextAuth({
         email: { label: 'Correo', type: 'email', placeholder: 'correo@correo.com' },
         password: { label: 'Contraseña', type: 'password', placeholder: 'contraseña' },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         return await dbUsers.checkUserEmailPassword(credentials!.email, credentials!.password);
       },
     }),
@@ -29,7 +29,7 @@ export default NextAuth({
   },
 
   session: {
-    maxAge: 2592000000, // 1 month
+    maxAge: 2592000, // 1 month
     strategy: 'jwt',
     updateAge: 86400,
   },

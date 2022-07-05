@@ -1,21 +1,19 @@
 import { useContext, useEffect } from 'react';
-import { GetServerSideProps } from 'next';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import {
+  Box,
   Button,
-  FormControl,
   Grid,
-  MenuItem,
-  Select,
   TextField,
   Typography,
 } from '@mui/material';
-import { Box } from '@mui/system';
+import Cookies from 'js-cookie';
+import { useForm } from 'react-hook-form';
+
 import { ShopLayout } from '../../components/layouts';
-import { isValidToken, countries } from '../../utils';
+import { countries } from '../../utils';
 import { CartContext } from '../../context';
+
 
 type FormData = {
   firstName: string;
@@ -28,52 +26,60 @@ type FormData = {
   phone: string;
 };
 
-const getAddressFromCookies = () : FormData => {
-
+const getAddressFromCookies = (): FormData => {
   return {
-    firstName : Cookies.get('firstName') || '',
-    lastName  : Cookies.get('lastName') || '',
-    address   : Cookies.get('address') || '',
-    address2  : Cookies.get('address2') || '',
-    zip       : Cookies.get('zip') || '',
-    city      : Cookies.get('city') || '',
-    country   : Cookies.get('country') || '',
-    phone     : Cookies.get('phone') || '',
-  }
-}
+    firstName: Cookies.get('firstName') || '',
+    lastName: Cookies.get('lastName') || '',
+    address: Cookies.get('address') || '',
+    address2: Cookies.get('address2') || '',
+    zip: Cookies.get('zip') || '',
+    city: Cookies.get('city') || '',
+    country: Cookies.get('country') || '',
+    phone: Cookies.get('phone') || '',
+  };
+};
 
 const AddressPage = () => {
   const router = useRouter();
   const { updateShippingaddress } = useContext(CartContext);
-  const {register,handleSubmit,formState: { errors },reset} = useForm<FormData>({defaultValues:{
-    firstName: '',
-    lastName: '',
-    address: '',
-    address2: '',
-    zip: '',
-    city: '',
-    country: 'Argentina',
-    phone: '',
-  }});
-  
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      address: '',
+      address2: '',
+      zip: '',
+      city: '',
+      country: countries[0].code,
+      phone: '',
+    },
+  });
+
   useEffect(() => {
     reset(getAddressFromCookies());
-  }, [reset])
+  }, [reset]);
 
-  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+  const onSubmitAddress = (data: FormData) => {
     updateShippingaddress(data);
-    router.push('/checkout/summary')
+    router.push('/checkout/summary');
   };
 
   return (
     <ShopLayout
       title="Dirección"
-      pageDescription="Confimar dirección del destino"
+      pageDescription="Confirmar dirección del destino"
     >
-      <Typography variant="h1" component="h1">
-        Dirección
-      </Typography>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={handleSubmit(onSubmitAddress)}>
+        <Typography variant="h1" component="h1">
+          Dirección
+        </Typography>
+
         <Grid container spacing={2} sx={{ mt: 2 }}>
           <Grid item xs={12} sm={6}>
             <TextField
@@ -87,7 +93,6 @@ const AddressPage = () => {
               helperText={errors.firstName?.message}
             />
           </Grid>
-
           <Grid item xs={12} sm={6}>
             <TextField
               label="Apellido"
@@ -113,7 +118,6 @@ const AddressPage = () => {
               helperText={errors.address?.message}
             />
           </Grid>
-
           <Grid item xs={12} sm={6}>
             <TextField
               label="Dirección 2 (opcional)"
@@ -125,7 +129,7 @@ const AddressPage = () => {
 
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Codigo Postal"
+              label="Código Postal"
               variant="filled"
               fullWidth
               {...register('zip', {
@@ -135,7 +139,6 @@ const AddressPage = () => {
               helperText={errors.zip?.message}
             />
           </Grid>
-
           <Grid item xs={12} sm={6}>
             <TextField
               label="Ciudad"
@@ -150,20 +153,19 @@ const AddressPage = () => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <TextField
-                fullWidth
-                variant="filled"
-                label="Pais"
-                {...register('country', {
-                  required: 'Este campo es requerido',
-                })}
-                error={!!errors.country}
-                helperText={errors.country?.message}
-              />
-            </FormControl>
+      
+            <TextField
+              // select
+              variant="filled"
+              label="País"
+              fullWidth
+              {...register('country', {
+                required: 'Este campo es requerido',
+              })}
+              error={!!errors.country}
+              helperText={errors.country?.message}
+            />
           </Grid>
-
           <Grid item xs={12} sm={6}>
             <TextField
               label="Teléfono"
@@ -177,14 +179,15 @@ const AddressPage = () => {
             />
           </Grid>
         </Grid>
-        <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
+
+        <Box sx={{ mt: 5 }} display="flex" justifyContent="center">
           <Button
-            className="circular-btn"
-            color="secondary"
-            size="large"
             type="submit"
+            color="secondary"
+            className="circular-btn"
+            size="large"
           >
-            Revisar Pedido
+            Revisar pedido
           </Button>
         </Box>
       </form>
@@ -192,33 +195,5 @@ const AddressPage = () => {
   );
 };
 
-// You should use getServerSideProps when:
-// - Only if you need to pre-render a page whose data must be fetched at request time
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const { token = '' } = req.cookies;
-  let userID = '';
-  let validToken = false;
-
-  try {
-    await isValidToken(token);
-    validToken = true;
-  } catch (error) {
-    validToken = false;
-  }
-
-  if (!validToken) {
-    return {
-      redirect: {
-        destination: '/auth/login?page=/checkout/address',
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
-};
 
 export default AddressPage;

@@ -2,6 +2,9 @@ import { FC, useEffect, useReducer } from 'react';
 import { ICartProduct, IShippingAddress } from '../../interfaces';
 import { CartContext, cartReducer } from './';
 import Cookie from 'js-cookie';
+import tesloApi from '../../api/tesloApi';
+import { IOrder } from '../../interfaces/order';
+import axios from 'axios';
 export interface CartState {
   isLoaded: boolean;
   cart: ICartProduct[];
@@ -157,6 +160,46 @@ export const CartProvider: FC<Props> = ({ children }) => {
     });
   }
 
+  const createOrder = async (): Promise<{hasError: boolean; message: string;}> => {
+
+    if(!state.shippingAddress){1
+      throw new Error('No hay dirección de envío');
+    }
+
+    const body: IOrder = {
+      orderItems: state.cart.map( p => ({
+        ...p,
+        size: p.size!
+      })),
+      shippingAddress: state.shippingAddress,
+      numberOfItems: state.numberOfItems,
+      subtotal: state.subTotal,
+      tax: state.taxes,
+      total: state.total,
+      isPaid: false,
+    }
+    try {
+      const { data } = await tesloApi.post<IOrder>('/orders', body)
+      //TODO: dispatch
+
+      return{
+        hasError: false,
+        message: data._id!
+      } 
+    } catch (error) {
+      if(axios.isAxiosError(error)){
+        return{
+          hasError: true,
+          message: error.response?.data as string
+        }
+      }
+      return {
+        hasError: true,
+        message: 'Error al crear el pedido'
+      }
+    }
+  }
+
   return (
     <CartContext.Provider
       value={{
@@ -167,6 +210,9 @@ export const CartProvider: FC<Props> = ({ children }) => {
         updateCartQuantity,
         removeCartProduct,
         updateShippingaddress,
+
+        //Orders
+        createOrder,
       }}
     >
       {children}

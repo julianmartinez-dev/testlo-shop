@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Model, AnyKeys } from 'mongoose';
+import mongoose, { Schema, model, Model } from 'mongoose';
 import { IOrder } from '../interfaces';
 
 const orderSchema = new Schema(
@@ -36,6 +36,6 @@ const orderSchema = new Schema(
   }
 );
 
-const Order: Model<IOrder> = mongoose.models.User || model('Order', orderSchema);
+const Order: Model<IOrder> = mongoose.models.Order || model('Order', orderSchema);
 
 export default Order;
