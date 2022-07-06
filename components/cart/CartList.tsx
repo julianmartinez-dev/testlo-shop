@@ -23,7 +23,6 @@ export const CartList:FC<Props> = ({editable=false, products}) => {
 
   //Si enviamos los productos por props los mostramos, sino los obtenemos del context
   const productsToShow = products ? products : cart;
-  console.log(productsToShow)
 
   return (
     <>
