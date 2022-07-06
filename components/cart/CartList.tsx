@@ -5,12 +5,14 @@ import { FC, useContext } from "react";
 import { CartContext } from "../../context";
 import { ItemCounter } from "../ui";
 import { ICartProduct } from '../../interfaces';
+import { IOrderItem } from '../../interfaces/orderItem';
 
 interface Props {
   editable?: boolean;
+  products?: IOrderItem[]
 }
 
-export const CartList:FC<Props> = ({editable=false}) => {
+export const CartList:FC<Props> = ({editable=false, products}) => {
 
   const { cart, updateCartQuantity, removeCartProduct } = useContext(CartContext);
 
@@ -19,9 +21,13 @@ export const CartList:FC<Props> = ({editable=false}) => {
     updateCartQuantity(product);
   }
 
+  //Si enviamos los productos por props los mostramos, sino los obtenemos del context
+  const productsToShow = products ? products : cart;
+  console.log(productsToShow)
+
   return (
     <>
-      {cart.map((product) => (
+      {productsToShow.map((product) => (
         <Grid
           container
           spacing={2}
@@ -52,7 +58,9 @@ export const CartList:FC<Props> = ({editable=false}) => {
                 <ItemCounter
                   currentValue={product.quantity}
                   maxValue={10}
-                  updateQuantity={(value) => onNewCartQuantityValue(product, value)}
+                  updateQuantity={(value) =>
+                    onNewCartQuantityValue(product as ICartProduct, value)
+                  }
                 />
               ) : (
                 <Typography variant={'body1'}>
@@ -75,7 +83,11 @@ export const CartList:FC<Props> = ({editable=false}) => {
           >
             <Typography variant={'subtitle1'}>${product.price}</Typography>
             {editable && (
-              <Button variant="text" color="secondary" onClick={() => removeCartProduct(product)}>
+              <Button
+                variant="text"
+                color="secondary"
+                onClick={() => removeCartProduct(product as ICartProduct)}
+              >
                 Eliminar
               </Button>
             )}

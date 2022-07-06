@@ -1,5 +1,5 @@
 import NextLink from 'next/link';
-Link;
+import { GetServerSideProps, NextPage } from 'next';
 import {
   Button,
   Card,
@@ -13,36 +13,48 @@ import {
 } from '@mui/material';
 import { CartList, OrderSummary } from '../../components/cart';
 import { ShopLayout } from '../../components/layouts';
-import { CreditCardOffOutlined, CreditCardOutlined } from '@mui/icons-material';
+import {  CreditCardOutlined } from '@mui/icons-material';
+import { getSession } from 'next-auth/react';
+import { dbOrders } from '../../database';
+import { IOrder } from '../../interfaces';
 
-const OrderPage = () => {
+interface Props {
+  order: IOrder;
+}
+
+const OrderPage: NextPage<Props> = ({order}) => {
+  const { isPaid,numberOfItems,tax,total,subtotal,_id,orderItems,shippingAddress } = order;
+
+  console.log({order})
+
   return (
     <ShopLayout
-      title="Resumen de la orden #123123"
+      title="Resumen de la orden"
       pageDescription="Resumen de la orden"
     >
       <Typography variant="h1" component="h1">
-        Orden #asd12313
+        Orden {_id}
       </Typography>
 
       {/* <Chip sx={{my:2}} label='Pendiente de pago' variant='outlined' color='error' icon={<CreditCardOffOutlined/>}/> */}
       <Chip
         sx={{ my: 2 }}
-        label="Orden ya fue pagada"
+        label={isPaid ? 'Orden Pagada' : 'Orden pendiente de pago'}
         variant="outlined"
-        color="success"
+        color={isPaid ? 'success' : 'error'}
         icon={<CreditCardOutlined />}
       />
 
       <Grid container>
         <Grid item xs={12} sm={7}>
-          <CartList />
+          <CartList products={order.orderItems} />
         </Grid>
         <Grid item xs={12} sm={5}>
           <Card className="summary-card">
             <CardContent>
               <Typography variant="h2" component="h2">
-                Resumen (3 productos)
+                Resumen ({numberOfItems}{' '}
+                {numberOfItems > 1 ? 'productos' : 'producto'})
               </Typography>
               <Divider sx={{ my: 1 }} />
 
@@ -50,38 +62,44 @@ const OrderPage = () => {
                 <Typography variant="subtitle1">
                   Dirección de entrega
                 </Typography>
-                <NextLink href="/checkout/address" passHref>
-                  <Link underline="always">Editar</Link>
-                </NextLink>
               </Box>
 
-              <Typography>Julian Martinez</Typography>
-              <Typography>Liniers 736</Typography>
-              <Typography>San Francisco, 2400</Typography>
-              <Typography>Argentina</Typography>
-              <Typography>356433398</Typography>
+              <Typography>
+                {shippingAddress.firstName} {shippingAddress.lastName}
+              </Typography>
+              <Typography>{shippingAddress.address}</Typography>
+              <Typography>
+                {shippingAddress.city} {shippingAddress.zip}
+              </Typography>
+              <Typography>{shippingAddress.country}</Typography>
+              <Typography>{shippingAddress.phone}</Typography>
 
               <Divider sx={{ my: 1 }} />
 
-              <Box display="flex" justifyContent={'end'}>
-                <NextLink href="/checkout/cart" passHref>
-                  <Link underline="always">Editar</Link>
-                </NextLink>
-              </Box>
-
-              <OrderSummary />
-
-              <Box sx={{ mt: 3 }}>
-                <h1>Pagar</h1>
-              </Box>
-
-              <Chip
-                sx={{ my: 2 }}
-                label="Orden ya fue pagada"
-                variant="outlined"
-                color="success"
-                icon={<CreditCardOutlined />}
+              <OrderSummary
+                orderValues={{
+                  numberOfItems,
+                  subTotal: subtotal,
+                  taxes: tax,
+                  total,
+                }}
               />
+
+              <Box sx={{ mt: 1 }} display="flex" flexDirection='column'>
+                {isPaid ? (
+                  <Chip
+                    sx={{ my: 2 }}
+                    label={'Orden Pagada'}
+                    variant="outlined"
+                    color={'success'}
+                    icon={<CreditCardOutlined />}
+                  />
+                ) : (
+                  <Box sx={{ mt: 3 }}>
+                    <h1>Pagar</h1>
+                  </Box>
+                )}
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -89,5 +107,54 @@ const OrderPage = () => {
     </ShopLayout>
   );
 };
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({req, query}) => {
+  
+  const { id = '' } = query;
+  const session:any = await getSession({req})
+
+  //Si no hay una sesion, redirigir a login
+  if(!session){
+    return {
+      redirect:{
+        destination: `/auth/login?page=/orders/${id}`,
+        permanent: false,
+      }
+    }
+  }
+
+  //Comprobar si existe una orden con ese id
+  const order = await dbOrders.getOrderByID(id.toString());
+
+  //Si no hay order redirigir al historial de ordenes
+  if(!order){
+    return {
+      redirect: {
+        destination: `/orders/history`,
+        permanent: false,
+      },
+    };
+  }
+
+  //Si esta logueado pero no tiene permisos de ver esta orden, redirigir al historial de ordenes
+  if(order.user !== session.user._id){
+    return {
+      redirect: {
+        destination: `/orders/history`,
+        permanent: false,
+      },
+    };
+  }
+
+
+  return {
+    props: {
+      order
+    }
+  }
+}
 
 export default OrderPage;

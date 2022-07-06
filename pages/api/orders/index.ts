@@ -51,8 +51,10 @@ const createOrder = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     const backendTotal = subTotal + taxes;
 
     if (total !== backendTotal) {
+      console.log(`Los montos totales no coinciden, [front: ${total} | back: ${backendTotal}]`);
+      
       throw new Error(
-        `Los montos totales no coinciden, [front: ${total} | back: ${backendTotal}]`
+        `Los montos totales no coinciden, orden rechazada`
       );
     }
 

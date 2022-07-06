@@ -12,7 +12,8 @@ type CartActionType =
   | { type: '[Cart] - Remove Product'; payload: ICartProduct }
   | { type: '[Cart] - Update Order Summary', payload: IOrderSummary }
   | { type: '[Cart] - Load ShippingAddress from cookies', payload: IShippingAddress }
-  | { type: '[Cart] - Update ShippingAddress', payload: IShippingAddress };
+  | { type: '[Cart] - Update ShippingAddress', payload: IShippingAddress }
+  | { type: '[Cart] - Order Complete' };
 
 export const cartReducer = (state: CartState,action: CartActionType): CartState => {
   switch (action.type) {
@@ -55,6 +56,15 @@ export const cartReducer = (state: CartState,action: CartActionType): CartState 
       return {
         ...state,
         shippingAddress: action.payload
+      }
+    case '[Cart] - Order Complete':
+      return {
+        ...state,
+        cart: [],
+        numberOfItems: 0,
+        subTotal: 0,
+        taxes: 0,
+        total: 0,
       }
 
     default:

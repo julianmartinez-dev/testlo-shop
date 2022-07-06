@@ -81,7 +81,7 @@ export const SideMenu = () => {
                 <ListItemText primary={'Perfil'} />
               </ListItem>
 
-              <ListItem button>
+              <ListItem button onClick={() => navigateTo('/orders/history')}>
                 <ListItemIcon>
                   <ConfirmationNumberOutlined />
                 </ListItemIcon>
@@ -126,7 +126,7 @@ export const SideMenu = () => {
           <ListItem
             button
             sx={{ display: isLoggedIn ? 'none' : 'flex' }}
-            onClick={() => navigateTo(`/auth/login?page=${ router.asPath}`)}
+            onClick={() => navigateTo(`/auth/login?page=${router.asPath}`)}
           >
             <ListItemIcon>
               <VpnKeyOutlined />
