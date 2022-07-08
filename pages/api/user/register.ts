@@ -8,7 +8,7 @@ type Data =
   | { message: string }
   | { token: string; user: { email: string; role: string; name: string } };
 
-export default function (req: NextApiRequest, res: NextApiResponse<Data>) {
+export default function handler (req: NextApiRequest, res: NextApiResponse<Data>) {
   switch (req.method) {
     case 'POST':
       return registerUser(req, res);

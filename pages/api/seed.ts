@@ -6,7 +6,7 @@ type Data = {
     message: string
 }
 
-export default async function (req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler (req: NextApiRequest, res: NextApiResponse<Data>) {
     if(process.env.NODE_ENV === 'production'){
         return res.status(401).json({
             message: 'No se puede ejecutar esta acción en producción'
