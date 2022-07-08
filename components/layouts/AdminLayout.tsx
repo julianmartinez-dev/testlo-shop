@@ -44,7 +44,7 @@ export const AdminLayout: FC<Props> = ({
           <Typography variant="h1" component="h1" display={'flex'} alignItems="center" gap={1}>
             {icon} {title}
           </Typography>
-          <Typography variant="h2" sx={{ mb: 1 }}>
+          <Typography variant="h2" sx={{ mb: 2, mt: 1 }}>
             {subtitle}
           </Typography>
         </Box>
