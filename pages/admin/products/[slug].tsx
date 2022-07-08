@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { GetServerSideProps } from 'next';
 import { AdminLayout } from '../../../components/layouts';
@@ -33,6 +33,7 @@ import {
 } from '@mui/material';
 import { tesloApi } from '../../../api';
 import Product from '../../../models/Products';
+import { get } from 'http';
 
 
 const validTypes = ['shirts', 'pants', 'hoodies', 'hats'];
@@ -58,6 +59,7 @@ interface Props {
 }
 const ProductAdminPage: FC<Props> = ({ product }) => {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [newTagValue, setNewTagValue] = useState('')
   const [isSaving, setisSaving ] = useState(false)
 
@@ -82,6 +84,25 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 
     return () => subscription.unsubscribe();
   }, [watch, setValue]);
+
+  const onChangeFile = async ({target}: React.ChangeEvent<HTMLInputElement>) => {
+    if(!target.files || target.files.length === 0){
+      return;
+    }
+    
+    try {
+      for(const file of target.files){
+        const formData = new FormData();
+
+        formData.append('file',file)
+        const { data } = await tesloApi.post<{message : string}>('/admin/upload', formData)
+        setValue('images',[...getValues('images'), data.message], { shouldValidate: true});
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const onSubmit = async ( form: FormData) => {
     if(form.images.length < 2){
@@ -134,6 +155,10 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
     const updatedTags = getValues('tags').filter( t => t !== tag);
     setValue('tags', updatedTags, { shouldValidate: true });
   };
+
+  const onDeleteImage = (img: string) => {
+    setValue('images', getValues('images').filter( image => image !== img), { shouldValidate: true });
+  }
 
   return (
     <AdminLayout
@@ -327,29 +352,39 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
                 fullWidth
                 startIcon={<UploadOutlined />}
                 sx={{ mb: 3 }}
+                onClick={() => fileInputRef.current?.click()}
               >
                 Cargar imagen
               </Button>
+
+              <input 
+                ref={ fileInputRef }
+                type="file"
+                multiple
+                accept='image/png, image/jpeg, image/jpg, image/gif'
+                style={{ display: 'none' }}
+                onChange={ onChangeFile }
+              />
 
               <Chip
                 label="Es necesario al menos 2 imagenes"
                 color="error"
                 variant="outlined"
-                sx={{ mb: 3 }}
+                sx={{ mb: 3 , display: getValues('images').length < 2 ? 'flex' : 'none'}}
               />
 
               <Grid container spacing={2}>
-                {product.images.map((img) => (
+                {getValues('images').map((img) => (
                   <Grid item xs={4} sm={3} key={img}>
                     <Card>
                       <CardMedia
                         component="img"
                         className="fadeIn"
-                        image={`/products/${img}`}
+                        image={img}
                         alt={img}
                       />
                       <CardActions>
-                        <Button fullWidth color="error">
+                        <Button fullWidth color="error" onClick={() => onDeleteImage(img)}>
                           Borrar
                         </Button>
                       </CardActions>

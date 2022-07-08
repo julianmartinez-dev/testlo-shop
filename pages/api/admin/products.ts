@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '../../../database';
 import { IProduct } from '../../../interfaces';
 import { Product } from '../../../models';
+import { v2 as cloudinary } from 'cloudinary';
 
 type Data = 
 | {message: string}
@@ -33,9 +34,18 @@ const getProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     const products = await Product.find().sort({ title: 'asc'}).lean();
     await db.disconnect();
 
-    //TODO: Actualizar las imagenes
+     const updatedProducts = products.map((product) => {
+       product.images = product.images.map((image) => {
+         return image.includes('cloudi')
+           ? image
+           : `${process.env.HOST_NAME}/products/${image}`;
+       });
 
-    res.status(200).json(products)
+       return product;
+     });
+
+
+    res.status(200).json(updatedProducts);
 }
 const updateProduct = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   const { _id = '', images = [] } = req.body as IProduct;
@@ -59,7 +69,12 @@ const updateProduct = async (req: NextApiRequest, res: NextApiResponse<Data>) =>
       return res.status(400).json({ message: 'El producto no existe' })
     }
 
-    //TODO: eliminar imagenes en Cloudinary
+    product.images.forEach( async(image) => {
+      if(!images.includes(image)){
+        const [fileID, extension] = image.substring(image.lastIndexOf('/') + 1).split('.');
+        await cloudinary.uploader.destroy(fileID);
+      }
+    })
 
     await product.update(req.body);
     await db.disconnect();

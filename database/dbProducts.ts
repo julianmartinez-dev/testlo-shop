@@ -12,6 +12,12 @@ export const getProductBySlug = async (slug: string): Promise<IProduct | null> =
         return null
     }
 
+    product.images = product.images.map( image => {
+      return image.includes('cloudi') ? image : `${process.env.HOST_NAME}/products/${image}`
+    })
+
+    console.log(product.images)
+
     return JSON.parse(JSON.stringify(product))
 }
 
@@ -33,7 +39,20 @@ export const getProductsByQuery = async (query: string): Promise<IProduct[]> => 
     const products = await Product.find({ $text: { $search: query } }).select('title images price inStock slug -_id').lean();
     await db.disconnect()
 
-    return products;
+    const updatedProducts = products.map( product => {
+      product.images = product.images.map((image) => {
+        return image.includes('cloudi')
+          ? image
+          : `${process.env.HOST_NAME}/products/${image}`;
+      });
+
+      return product;
+    })
+
+   
+
+
+    return updatedProducts;
 }
 
 export const getAllProducts= async (): Promise<IProduct[]> => {
@@ -43,5 +62,15 @@ export const getAllProducts= async (): Promise<IProduct[]> => {
     .lean();
   await db.disconnect();
 
-  return products;
+   const updatedProducts = products.map((product) => {
+     product.images = product.images.map((image) => {
+       return image.includes('cloudi')
+         ? image
+         : `${process.env.HOST_NAME}/products/${image}`;
+     });
+
+     return product;
+   });
+
+  return updatedProducts;
 };

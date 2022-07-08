@@ -30,5 +30,14 @@ async function getProduct(req: NextApiRequest, res: NextApiResponse<Data>) {
         })
     }
 
+ 
+    product.images = product.images.map((image) => {
+      return image.includes('cloudi')
+        ? image
+        : `${process.env.HOST_NAME}/products/${image}`;
+    });1
+
+
+
     return res.status(200).json(product);
 }

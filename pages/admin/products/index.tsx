@@ -12,7 +12,7 @@ const columns: GridColDef[] = [
        headerName: 'Foto',
        renderCell: ({row}: GridValueGetterParams) => { return (
          <a href={`/product/${row.slug}`} target="_blank" rel="noreferrer">
-           <CardMedia component={'img'} image={`/products/${row.img}`} alt={row.title}/>
+           <CardMedia component={'img'} image={row.img} alt={row.title}/>
          </a>
        );}
  },
