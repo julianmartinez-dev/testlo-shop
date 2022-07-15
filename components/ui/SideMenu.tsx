@@ -74,11 +74,11 @@ export const SideMenu = () => {
 
           {isLoggedIn && (
             <>
-              <ListItem button>
+              <ListItem>
                 <ListItemIcon>
                   <AccountCircleOutlined />
                 </ListItemIcon>
-                <ListItemText primary={'Perfil'} />
+                <ListItemText primary={user?.name}/>
               </ListItem>
 
               <ListItem button onClick={() => navigateTo('/orders/history')}>
