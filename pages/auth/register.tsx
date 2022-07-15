@@ -129,7 +129,7 @@ const RegisterPage = () => {
                 href={
                   router.query.page
                     ? `/auth/register?page=${destination}`
-                    : '/auth/register'
+                    : '/auth/login'
                 }
                 passHref
               >
